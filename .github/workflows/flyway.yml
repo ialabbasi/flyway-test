@@ -25,12 +25,5 @@ jobs:
           FLYWAY_USER: ${{ secrets.DB_USER }}
           FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
           FLYWAY_SCHEMAS: public
-        run: |
-          # Call Flyway CLI in PowerShell
-          & C:/flyway-11.11.0/flyway migrate `
-            -url=$env:FLYWAY_URL `
-            -user=$env:FLYWAY_USER `
-            -password=$env:FLYWAY_PASSWORD `
-            -schemas=$env:FLYWAY_SCHEMAS `
-            -baselineOnMigrate=true `
-            -locations=filesystem:./db/migrations
+        run: C:/flyway-11.11.0/flyway migrate -url=$env:FLYWAY_URL -user=$env:FLYWAY_USER -password=$env:FLYWAY_PASSWORD -schemas=$env:FLYWAY_SCHEMAS -baselineOnMigrate=true -locations=filesystem:./db/migrations
+
