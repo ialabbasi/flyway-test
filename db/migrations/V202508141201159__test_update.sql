@@ -1,0 +1,1 @@
+ALTER TABLE penguin.test_table ADD COLUMN IF NOT EXISTS test_column VARCHAR(10);

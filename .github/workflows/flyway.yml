@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Java 17
+      - name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
@@ -26,6 +26,11 @@ jobs:
           FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
           FLYWAY_SCHEMAS: public
         run: |
-          C:/flyway-11.11.0/flyway -locations=filesystem:./db/migrations \
-            -schemas=$FLYWAY_SCHEMAS \
-            -baselineOnMigrate=true migrate
+          # Call Flyway CLI in PowerShell
+          & C:/flyway-11.11.0/flyway migrate `
+            -url=$env:FLYWAY_URL `
+            -user=$env:FLYWAY_USER `
+            -password=$env:FLYWAY_PASSWORD `
+            -schemas=$env:FLYWAY_SCHEMAS `
+            -baselineOnMigrate=true `
+            -locations=filesystem:./db/migrations
