@@ -8,6 +8,7 @@ on:
 jobs:
   migrate:
     runs-on: self-hosted
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -18,23 +19,33 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Check migration files
+      - name: Verify migration files
         run: dir .\db\migrations
 
-- name: Run Flyway migrations
-  shell: pwsh
-  run: |
-    $pw = $env:FLYWAY_PASSWORD
-    & "C:/flyway-11.11.0/flyway.cmd" `
-      -url="$env:FLYWAY_URL" `
-      -user="$env:FLYWAY_USER" `
-      -password="$pw" `
-      -schemas="$env:FLYWAY_SCHEMAS" `
-      -baselineOnMigrate=true `
-      -locations=filesystem:./db/migrations `
-      migrate -X
-  env:
-    FLYWAY_URL: jdbc:postgresql://192.168.2.102:5432/cms
-    FLYWAY_USER: ${{ secrets.FLYWAY_USER }}
-    FLYWAY_PASSWORD: ${{ secrets.FLYWAY_PASSWORD }}
-    FLYWAY_SCHEMAS: penguin
+      - name: Verify database connection
+        env:
+          FLYWAY_URL: jdbc:postgresql://192.168.2.102:5432/cms
+          FLYWAY_USER: ${{ secrets.DB_USER }}
+          FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          echo "Checking database connection..."
+          psql "$env:FLYWAY_URL" -U "$env:FLYWAY_USER" -c "\conninfo"
+
+
+      - name: Run Flyway Migrations
+        env:
+          FLYWAY_URL: jdbc:postgresql://192.168.2.102:5432/cms
+          FLYWAY_USER: ${{ secrets.DB_USER }}
+          FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          FLYWAY_SCHEMAS: penguin
+          FLYWAY_LOCATIONS: filesystem:./db/migrations
+        run: |
+          echo "Running Flyway migrations..."
+          C:/flyway-11.11.0/flyway migrate `
+            -X `
+            -url="$env:FLYWAY_URL" `
+            -user="$env:FLYWAY_USER" `
+            -password="$env:FLYWAY_PASSWORD" `
+            -schemas="$env:FLYWAY_SCHEMAS" `
+            -baselineOnMigrate=true `
+            -locations="$env:FLYWAY_LOCATIONS"
