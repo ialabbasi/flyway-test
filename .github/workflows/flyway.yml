@@ -10,39 +10,23 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # Step 1: Checkout repository
+      # 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Java
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      # Step 3: List migration files (debug)
-      - name: Check migration files
-        shell: powershell
+      # 2. Install Flyway CLI
+      - name: Set up Flyway
         run: |
-          Write-Host "Current directory: $(Get-Location)"
-          Get-ChildItem .\db\migrations
+          curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/10.32.0/flyway-commandline-10.32.0-linux-x64.tar.gz -o flyway.tar.gz
+          tar -xzf flyway.tar.gz
+          sudo ln -s $(pwd)/flyway-10.32.0/flyway /usr/local/bin/flyway
 
-      # Step 4: Run Flyway
+      # 3. Run Flyway migrations
       - name: Run Flyway Migrations
-        shell: powershell
         env:
           FLYWAY_URL: jdbc:postgresql://192.168.2.102:5432/cms
           FLYWAY_USER: ${{ secrets.DB_USER }}
           FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
           FLYWAY_SCHEMAS: penguin
         run: |
-          Write-Host "Starting Flyway migration..."
-          & "C:/flyway-11.11.0/flyway" migrate `
-            -X `
-            -url=$env:FLYWAY_URL `
-            -user=$env:FLYWAY_USER `
-            -password=$env:FLYWAY_PASSWORD `
-            -schemas=$env:FLYWAY_SCHEMAS `
-            -baselineOnMigrate=true `
-            -locations=filesystem:./db/migrations
+          flyway -locations=filesystem:db/migrations migrate
