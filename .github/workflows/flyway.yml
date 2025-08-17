@@ -7,7 +7,7 @@ on:
 
 jobs:
   migrate:
-    runs-on: self-hosted
+    runs-on: [self-hosted, windows]
 
     steps:
       # 1. Checkout repository
@@ -17,9 +17,10 @@ jobs:
       # 2. Install Flyway CLI
       - name: Set up Flyway
         run: |
-          curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/10.32.0/flyway-commandline-10.32.0-linux-x64.tar.gz -o flyway.tar.gz
-          tar -xzf flyway.tar.gz
-          sudo ln -s $(pwd)/flyway-10.32.0/flyway /usr/local/bin/flyway
+          Invoke-WebRequest -Uri https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/10.32.0/flyway-commandline-10.32.0-windows-x64.zip -OutFile flyway.zip
+          Expand-Archive flyway.zip -DestinationPath flyway
+          $env:Path += ";$PWD\flyway\flyway-10.32.0"
+        shell: pwsh
 
       # 3. Run Flyway migrations
       - name: Run Flyway Migrations
@@ -30,3 +31,4 @@ jobs:
           FLYWAY_SCHEMAS: penguin
         run: |
           flyway -locations=filesystem:db/migrations migrate
+        shell: pwsh
