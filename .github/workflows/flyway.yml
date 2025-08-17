@@ -19,18 +19,17 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Verify migration files
+      - name: Check migration files
         run: dir .\db\migrations
 
-      - name: Verify database connection
+      - name: Check database connection
+        shell: powershell
         env:
-          FLYWAY_URL: jdbc:postgresql://192.168.2.102:5432/cms
-          FLYWAY_USER: ${{ secrets.DB_USER }}
-          FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
-          echo "Checking database connection..."
-          psql "$env:FLYWAY_URL" -U "$env:FLYWAY_USER" -c "\conninfo"
-
+          Write-Host "Checking database connection..."
+          psql "postgresql://$env:DB_USER:$env:DB_PASSWORD@192.168.2.102:5432/cms" -c "\conninfo"
 
       - name: Run Flyway Migrations
         env:
@@ -38,14 +37,4 @@ jobs:
           FLYWAY_USER: ${{ secrets.DB_USER }}
           FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
           FLYWAY_SCHEMAS: penguin
-          FLYWAY_LOCATIONS: filesystem:./db/migrations
-        run: |
-          echo "Running Flyway migrations..."
-          C:/flyway-11.11.0/flyway migrate `
-            -X `
-            -url="$env:FLYWAY_URL" `
-            -user="$env:FLYWAY_USER" `
-            -password="$env:FLYWAY_PASSWORD" `
-            -schemas="$env:FLYWAY_SCHEMAS" `
-            -baselineOnMigrate=true `
-            -locations="$env:FLYWAY_LOCATIONS"
+        run: C:/flyway-11.11.0/flyway migrate -X -url="$env:FLYWAY_URL" -user="$env:FLYWAY_USER" -password="$env:FLYWAY_PASSWORD" -schemas="$env:FLYWAY_SCHEMAS" -baselineOnMigrate=true -locations=filesystem:./db/migrations
