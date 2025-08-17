@@ -7,8 +7,7 @@ on:
 
 jobs:
   migrate:
-    runs-on: windows-latest
-
+    runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -23,14 +22,14 @@ jobs:
         run: dir .\db\migrations
 
       - name: Run Flyway Migrations
-        shell: pwsh
+        shell: powershell
         env:
           FLYWAY_URL: jdbc:postgresql://192.168.2.102:5432/cms
           FLYWAY_USER: ${{ secrets.DB_USER }}
           FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
           FLYWAY_SCHEMAS: penguin
         run: |
-          & "C:/flyway-11.11.0/flyway" migrate `
+          & 'C:/flyway-11.11.0/flyway.cmd' migrate -X `
             -url=${env:FLYWAY_URL} `
             -user=${env:FLYWAY_USER} `
             -password=${env:FLYWAY_PASSWORD} `
