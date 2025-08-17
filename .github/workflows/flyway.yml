@@ -33,7 +33,7 @@ jobs:
         shell: pwsh
         run: |
           $flywayVersion = "11.11.0"
-          $flywayZip = "flyway-commandline-$flywayVersion-windows-x64.zip"
+          $flywayZip = "flyway-commandline-$flywayVersion.zip"
           $flywayUrl = "https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/$flywayVersion/$flywayZip"
           $flywayDir = "$env:TEMP\flyway-$flywayVersion"
 
