@@ -30,4 +30,4 @@ jobs:
           user: ${{ secrets.DB_USER }}
           password: ${{ secrets.DB_PASSWORD }}
           schemas: penguin
-          locations: filesystem:db/migrations
+          locations: filesystem:db/migrations 
