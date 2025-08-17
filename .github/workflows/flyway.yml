@@ -14,17 +14,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Download and extract Flyway CLI
-      - name: Set up Flyway
+      # 2. Set Flyway Path
+      - name: Set Flyway Path
         shell: powershell
         run: |
-          $flywayUrl = "https://github.com/flyway/flyway/releases/download/flyway-11.11.1/flyway-commandline-11.11.1-windows-x64.zip"
-          $flywayZip = "$env:TEMP\flyway.zip"
-          Invoke-WebRequest -Uri $flywayUrl -OutFile $flywayZip
-          Expand-Archive -Path $flywayZip -DestinationPath "$env:TEMP\flyway"
-          $env:PATH += ";$env:TEMP\flyway\flyway-11.11.1"
+          $env:PATH += ";C:\flyway-11.11.0"
 
-      # 3. Run Flyway migrations
+      # 3. Run Flyway Migrations
       - name: Run Flyway Migrations
         shell: powershell
         env:
@@ -33,4 +29,4 @@ jobs:
           FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
           FLYWAY_SCHEMAS: penguin
         run: |
-          flyway -locations=filesystem:db/migrations migrate
+          flyway.cmd -locations=filesystem:db/migrations migrate
