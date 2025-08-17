@@ -20,7 +20,7 @@ jobs:
         run: |
           $env:PATH += ";C:\flyway-11.11.0"
 
-      # 3. Run Flyway Migrations
+      # 3. Run Flyway Migrations with baseline
       - name: Run Flyway Migrations
         shell: powershell
         env:
@@ -29,4 +29,5 @@ jobs:
           FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
           FLYWAY_SCHEMAS: penguin
         run: |
-          flyway.cmd -locations=filesystem:db/migrations migrate
+          # Initialize schema history if needed and apply migrations
+          flyway.cmd -locations=filesystem:db/migrations -baselineOnMigrate=true migrate
