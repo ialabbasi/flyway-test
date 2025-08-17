@@ -20,19 +20,21 @@ jobs:
 
       - name: Check migration files
         run: dir .\db\migrations
-      - name: Run Flyway Migrations
-        shell: powershell
-        env:
-          FLYWAY_URL: jdbc:postgresql://192.168.2.102:5432/cms
-          FLYWAY_USER: ${{ secrets.DB_USER }}
-          FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          FLYWAY_SCHEMAS: penguin
-        run: |
-          & "C:/flyway-11.11.0/flyway.cmd" `
-            -url="$env:FLYWAY_URL" `
-            -user="$env:FLYWAY_USER" `
-            -password="$env:FLYWAY_PASSWORD" `
-            -schemas="$env:FLYWAY_SCHEMAS" `
-            -baselineOnMigrate=true `
-            -locations=filesystem:./db/migrations `
-            migrate -X
+
+- name: Run Flyway migrations
+  shell: pwsh
+  run: |
+    $pw = $env:FLYWAY_PASSWORD
+    & "C:/flyway-11.11.0/flyway.cmd" `
+      -url="$env:FLYWAY_URL" `
+      -user="$env:FLYWAY_USER" `
+      -password="$pw" `
+      -schemas="$env:FLYWAY_SCHEMAS" `
+      -baselineOnMigrate=true `
+      -locations=filesystem:./db/migrations `
+      migrate -X
+  env:
+    FLYWAY_URL: jdbc:postgresql://192.168.2.102:5432/cms
+    FLYWAY_USER: ${{ secrets.FLYWAY_USER }}
+    FLYWAY_PASSWORD: ${{ secrets.FLYWAY_PASSWORD }}
+    FLYWAY_SCHEMAS: penguin
