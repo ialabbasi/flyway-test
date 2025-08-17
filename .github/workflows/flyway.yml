@@ -33,11 +33,11 @@ jobs:
         shell: pwsh
         run: |
           $flywayVersion = "11.11.0"
-          $flywayZip = "flyway-commandline-$flywayVersion.zip"
-          $flywayUrl = "https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/$flywayVersion/$flywayZip"
+          $flywayZip = "flyway-commandline-$flywayVersion-windows-x64.zip"
+          $flywayUrl = "https://github.com/flyway/flyway/releases/download/flyway-$flywayVersion/$flywayZip"
           $flywayDir = "$env:TEMP\flyway-$flywayVersion"
 
-          Write-Host "Downloading Flyway..."
+          Write-Host "Downloading Flyway from GitHub Releases..."
           Invoke-WebRequest -Uri $flywayUrl -OutFile "$env:TEMP\$flywayZip"
 
           Write-Host "Extracting Flyway..."
