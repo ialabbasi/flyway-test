@@ -3,59 +3,31 @@ name: Flyway Migrations
 on:
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:
 
 jobs:
   migrate:
-    runs-on: self-hosted
-
-    env:
-      FLYWAY_URL: jdbc:postgresql://192.168.2.102:5432/cms
-      FLYWAY_USER: ${{ secrets.FLYWAY_USER }}
-      FLYWAY_PASSWORD: ${{ secrets.FLYWAY_PASSWORD }}
-      FLYWAY_SCHEMAS: penguin
+    runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the repo so we have access to the migration scripts
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Java
+      # Step 2: Set up Java (required by Flyway)
+      - name: Set up Java
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '17'
 
-      - name: List migration scripts
-        run: dir .\db\migrations
-
-      - name: Run Flyway migrations
-        shell: pwsh
-        run: |
-          $flywayVersion = "11.11.0"
-          $flywayZip = "flyway-commandline-$flywayVersion-windows-x64.zip"
-          $flywayUrl = "https://github.com/flyway/flyway/releases/download/flyway-$flywayVersion/$flywayZip"
-          $flywayDir = "$env:TEMP\flyway-$flywayVersion"
-
-          Write-Host "Downloading Flyway from GitHub Releases..."
-          Invoke-WebRequest -Uri $flywayUrl -OutFile "$env:TEMP\$flywayZip"
-
-          Write-Host "Extracting Flyway..."
-          Expand-Archive -Path "$env:TEMP\$flywayZip" -DestinationPath $flywayDir -Force
-
-          $flywayExe = "$flywayDir\flyway-$flywayVersion\flyway.exe"
-          Write-Host "Flyway path: $flywayExe"
-
-          Write-Host "Checking DB connection..."
-          $connection = Test-Connection -ComputerName "192.168.2.102" -Count 2 -Quiet
-          if (-not $connection) { throw "Database server not reachable!" }
-
-          Write-Host "Running Flyway migrations..."
-          & $flywayExe migrate `
-            -url=$env:FLYWAY_URL `
-            -user=$env:FLYWAY_USER `
-            -password=$env:FLYWAY_PASSWORD `
-            -schemas=$env:FLYWAY_SCHEMAS `
-            -baselineOnMigrate=true `
-            -locations=filesystem:./db/migrations `
-            -X
+      # Step 3: Run Flyway migrations
+      - name: Run Flyway
+        uses: flyway/flyway-action@v2
+        with:
+          url: jdbc:postgresql://192.168.2.102:5432/cms
+          user: ${{ secrets.DB_USER }}
+          password: ${{ secrets.DB_PASSWORD }}
+          schemas: penguin
+          locations: filesystem:db/migrations
