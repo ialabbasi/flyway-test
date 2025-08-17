@@ -22,19 +22,24 @@ jobs:
       - name: Check migration files
         run: dir .\db\migrations
 
-      - name: Check database connection
-        shell: powershell
-        env:
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: |
-          Write-Host "Checking database connection..."
-          psql "postgresql://$env:DB_USER:$env:DB_PASSWORD@192.168.2.102:5432/cms" -c "\conninfo"
-
       - name: Run Flyway Migrations
+        shell: pwsh
         env:
           FLYWAY_URL: jdbc:postgresql://192.168.2.102:5432/cms
           FLYWAY_USER: ${{ secrets.DB_USER }}
           FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
           FLYWAY_SCHEMAS: penguin
-        run: C:/flyway-11.11.0/flyway migrate -X -url="$env:FLYWAY_URL" -user="$env:FLYWAY_USER" -password="$env:FLYWAY_PASSWORD" -schemas="$env:FLYWAY_SCHEMAS" -baselineOnMigrate=true -locations=filesystem:./db/migrations
+        run: |
+          Write-Host "Checking DB connection..."
+          $connection = Test-Connection -ComputerName 192.168.2.102 -Count 2 -Quiet
+          if (-not $connection) { throw "Database server not reachable!" }
+
+          Write-Host "Running Flyway migrations..."
+          & "C:/flyway-11.11.0/flyway.exe" migrate `
+            -url=$env:FLYWAY_URL `
+            -user=$env:FLYWAY_USER `
+            -password=$env:FLYWAY_PASSWORD `
+            -schemas=$env:FLYWAY_SCHEMAS `
+            -baselineOnMigrate=true `
+            -locations=filesystem:./db/migrations `
+            -X
