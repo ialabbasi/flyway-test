@@ -23,7 +23,7 @@ jobs:
         run: dir .\db\migrations
 
       - name: Run Flyway Migrations
-        shell: pwsh
+        shell: powershell
         env:
           FLYWAY_URL: jdbc:postgresql://192.168.2.102:5432/cms
           FLYWAY_USER: ${{ secrets.DB_USER }}
