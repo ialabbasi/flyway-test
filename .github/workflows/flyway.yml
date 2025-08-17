@@ -20,32 +20,38 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Java 17
+      - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Install Flyway
-        run: |
-          Write-Host "Downloading Flyway..."
-          Invoke-WebRequest -Uri https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/11.11.0/flyway-commandline-11.11.0-windows-x64.zip -OutFile flyway.zip
-          Expand-Archive flyway.zip -DestinationPath C:\flyway
-          $env:PATH += ";C:\flyway\flyway-11.11.0"
-
-      - name: List migration files
+      - name: List migration scripts
         run: dir .\db\migrations
 
-      - name: Check DB connectivity
+      - name: Run Flyway migrations
+        shell: pwsh
         run: |
+          $flywayVersion = "11.11.0"
+          $flywayZip = "flyway-commandline-$flywayVersion-windows-x64.zip"
+          $flywayUrl = "https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/$flywayVersion/$flywayZip"
+          $flywayDir = "$env:TEMP\flyway-$flywayVersion"
+
+          Write-Host "Downloading Flyway..."
+          Invoke-WebRequest -Uri $flywayUrl -OutFile "$env:TEMP\$flywayZip"
+
+          Write-Host "Extracting Flyway..."
+          Expand-Archive -Path "$env:TEMP\$flywayZip" -DestinationPath $flywayDir -Force
+
+          $flywayExe = "$flywayDir\flyway-$flywayVersion\flyway.exe"
+          Write-Host "Flyway path: $flywayExe"
+
           Write-Host "Checking DB connection..."
-          $connection = Test-Connection -ComputerName 192.168.2.102 -Count 2 -Quiet
+          $connection = Test-Connection -ComputerName "192.168.2.102" -Count 2 -Quiet
           if (-not $connection) { throw "Database server not reachable!" }
 
-      - name: Run Flyway migrations
-        run: |
           Write-Host "Running Flyway migrations..."
-          & "C:\flyway\flyway-11.11.0\flyway.exe" migrate `
+          & $flywayExe migrate `
             -url=$env:FLYWAY_URL `
             -user=$env:FLYWAY_USER `
             -password=$env:FLYWAY_PASSWORD `
