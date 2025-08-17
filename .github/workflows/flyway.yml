@@ -14,16 +14,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Install Flyway CLI
+      # 2. Download and extract Flyway CLI
       - name: Set up Flyway
+        shell: powershell
         run: |
-          Invoke-WebRequest -Uri https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/10.32.0/flyway-commandline-10.32.0-windows-x64.zip -OutFile flyway.zip
-          Expand-Archive flyway.zip -DestinationPath flyway
-          $env:Path += ";$PWD\flyway\flyway-10.32.0"
-        shell: pwsh
+          $flywayUrl = "https://github.com/flyway/flyway/releases/download/flyway-10.32.0/flyway-commandline-10.32.0-windows-x64.zip"
+          $flywayZip = "$env:TEMP\flyway.zip"
+          Invoke-WebRequest -Uri $flywayUrl -OutFile $flywayZip
+          Expand-Archive -Path $flywayZip -DestinationPath "$env:TEMP\flyway"
+          $env:PATH += ";$env:TEMP\flyway\flyway-10.32.0"
 
       # 3. Run Flyway migrations
       - name: Run Flyway Migrations
+        shell: powershell
         env:
           FLYWAY_URL: jdbc:postgresql://192.168.2.102:5432/cms
           FLYWAY_USER: ${{ secrets.DB_USER }}
@@ -31,4 +34,3 @@ jobs:
           FLYWAY_SCHEMAS: penguin
         run: |
           flyway -locations=filesystem:db/migrations migrate
-        shell: pwsh
