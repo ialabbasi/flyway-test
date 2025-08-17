@@ -7,7 +7,7 @@ on:
 
 jobs:
   migrate:
-    runs-on: self-hosted
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -30,7 +30,7 @@ jobs:
           FLYWAY_PASSWORD: ${{ secrets.DB_PASSWORD }}
           FLYWAY_SCHEMAS: penguin
         run: |
-          & 'C:/flyway-11.11.0/flyway' migrate -X `
+          & "C:/flyway-11.11.0/flyway" migrate `
             -url=${env:FLYWAY_URL} `
             -user=${env:FLYWAY_USER} `
             -password=${env:FLYWAY_PASSWORD} `
