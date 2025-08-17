@@ -8,7 +8,7 @@ on:
 
 jobs:
   migrate:
-    runs-on: windows-latest
+    runs-on: self-hosted
 
     env:
       FLYWAY_URL: jdbc:postgresql://192.168.2.102:5432/cms
